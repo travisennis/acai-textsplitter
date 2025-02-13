@@ -31,7 +31,7 @@ export class ParagraphSplitter
 
     this.minLength = fields?.minLength ?? 0;
     this.maxLength = fields?.maxLength ?? 1000;
-    this.paragraphPattern = new RegExp(fields?.paragraphPattern ?? "\\n{2,}");
+    this.paragraphPattern = fields?.paragraphPattern ?? /\n\s*\n/
   }
 
   splitText(text: string): string[] {
@@ -52,13 +52,21 @@ export class ParagraphSplitter
 
     for (const paragraph of paragraphs) {
       const potentialChunk = currentChunk
-        ? `${currentChunk}\\n\\n${paragraph}`
+        ? `${currentChunk}\n\n${paragraph}`
         : paragraph;
 
-      if (
-        currentChunk &&
-        this.lengthFunction(potentialChunk) <= this.maxLength
-      ) {
+      if (this.lengthFunction(paragraph) > this.maxLength) {
+        // Split long paragraph into smaller chunks
+        let remainingText = paragraph;
+        while (remainingText.length > 0) {
+          const chunk = remainingText.slice(0, this.maxLength);
+          const lastSpaceIndex = chunk.lastIndexOf(' ');
+          const splitIndex = lastSpaceIndex > 0 ? lastSpaceIndex : this.maxLength;
+          normalizedParagraphs.push(remainingText.slice(0, splitIndex));
+          remainingText = remainingText.slice(splitIndex).trim();
+        }
+        currentChunk = '';
+      } else if (currentChunk && this.lengthFunction(potentialChunk) <= this.maxLength) {
         currentChunk = potentialChunk;
       } else {
         if (currentChunk) {
@@ -74,7 +82,7 @@ export class ParagraphSplitter
 
     // Apply overlap if specified
     if (this.chunkOverlap > 0) {
-      return this.mergeSplits(normalizedParagraphs, "\\n\\n");
+      return this.mergeSplits(normalizedParagraphs, "\n\n");
     }
 
     return normalizedParagraphs;
