@@ -4,8 +4,8 @@
   "description": "Library providing multiple different text-splitting algorithms.",
   "type": "module",
   "exports": {
-    "types": "./dist/index.d.ts",
-    "default": "./dist/index.js"
+    "types": "./dist/*.d.ts",
+    "default": "./dist/*.js"
   },
   "keywords": ["cli", "ai", "llm"],
   "author": "Travis Ennis",
