@@ -74,19 +74,19 @@ export class SentenceSplitter
     }
 
     // Pre-process text to normalize spaces and protect abbreviations
-    let processedText = text.replace(/\s+/g, ' ').trim();
-    
+    let processedText = text.replace(/\s+/g, " ").trim();
+
     // Handle abbreviations before splitting
     for (const abbr of this.abbreviations) {
-        const regex = new RegExp(`${abbr.replace(/\./g, '\\.')}\\s+`, 'g');
-        processedText = processedText.replace(regex, `${abbr} `);
+      const regex = new RegExp(`${abbr.replace(/\./g, "\\.")}\\s+`, "g");
+      processedText = processedText.replace(regex, `${abbr} `);
     }
 
     // Split into sentences
     const sentences = processedText
-        .split(this.sentencePattern)
-        .filter(s => s.trim().length > 0)
-        .map(s => s.trim());
+      .split(this.sentencePattern)
+      .filter((s) => s.trim().length > 0)
+      .map((s) => s.trim());
 
     // Merge sentences that are too short and split ones that are too long
     const normalizedSentences: string[] = [];
@@ -98,13 +98,17 @@ export class SentenceSplitter
         let remainingText = sentence;
         while (remainingText.length > 0) {
           const chunk = remainingText.slice(0, this.maxLength);
-          const lastSpaceIndex = chunk.lastIndexOf(' ');
-          const splitIndex = lastSpaceIndex > 0 ? lastSpaceIndex : this.maxLength;
+          const lastSpaceIndex = chunk.lastIndexOf(" ");
+          const splitIndex =
+            lastSpaceIndex > 0 ? lastSpaceIndex : this.maxLength;
           normalizedSentences.push(remainingText.slice(0, splitIndex));
           remainingText = remainingText.slice(splitIndex).trim();
         }
-        currentChunk = '';
-      } else if (currentChunk && this.lengthFunction(`${currentChunk} ${sentence}`) <= this.maxLength) {
+        currentChunk = "";
+      } else if (
+        currentChunk &&
+        this.lengthFunction(`${currentChunk} ${sentence}`) <= this.maxLength
+      ) {
         currentChunk += ` ${sentence}`;
       } else {
         if (currentChunk) {

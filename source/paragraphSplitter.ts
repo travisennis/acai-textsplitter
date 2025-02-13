@@ -31,7 +31,7 @@ export class ParagraphSplitter
 
     this.minLength = fields?.minLength ?? 0;
     this.maxLength = fields?.maxLength ?? 1000;
-    this.paragraphPattern = fields?.paragraphPattern ?? /\n\s*\n/
+    this.paragraphPattern = fields?.paragraphPattern ?? /\n\s*\n/;
   }
 
   splitText(text: string): string[] {
@@ -60,13 +60,17 @@ export class ParagraphSplitter
         let remainingText = paragraph;
         while (remainingText.length > 0) {
           const chunk = remainingText.slice(0, this.maxLength);
-          const lastSpaceIndex = chunk.lastIndexOf(' ');
-          const splitIndex = lastSpaceIndex > 0 ? lastSpaceIndex : this.maxLength;
+          const lastSpaceIndex = chunk.lastIndexOf(" ");
+          const splitIndex =
+            lastSpaceIndex > 0 ? lastSpaceIndex : this.maxLength;
           normalizedParagraphs.push(remainingText.slice(0, splitIndex));
           remainingText = remainingText.slice(splitIndex).trim();
         }
-        currentChunk = '';
-      } else if (currentChunk && this.lengthFunction(potentialChunk) <= this.maxLength) {
+        currentChunk = "";
+      } else if (
+        currentChunk &&
+        this.lengthFunction(potentialChunk) <= this.maxLength
+      ) {
         currentChunk = potentialChunk;
       } else {
         if (currentChunk) {
