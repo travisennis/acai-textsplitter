@@ -18,7 +18,7 @@
     "lint:fix": "biome lint --unsafe --write",
     "lint:staged": "biome lint --error-on-warnings --no-errors-on-unmatched --staged",
     "prepare": "npm run compile",
-    "test": "node --test test/**/*.test.ts",
+    "test": "node --test tests/**/*.test.ts",
     "pretest": "npm run compile",
     "format": "biome format --write",
     "dev": "node ./source/index.ts",
