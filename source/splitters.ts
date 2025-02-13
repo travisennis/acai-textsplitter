@@ -1,0 +1,194 @@
+import { TextSplitter, type TextSplitterParams } from "./textSplitter.ts";
+
+// --- Interfaces ---
+
+export interface SentenceSplitterParams extends TextSplitterParams {
+  minLength?: number;
+  maxLength?: number;
+  overlap?: number;
+  /**
+   * List of abbreviations to handle (e.g., "Mr.", "Dr.", "etc.")
+   * These will be treated as non-sentence boundaries
+   */
+  abbreviations?: Set<string>;
+}
+
+export interface ParagraphSplitterParams extends TextSplitterParams {
+  minLength?: number;
+  maxLength?: number;
+  overlap?: number;
+  /**
+   * Pattern to use for paragraph splitting
+   * Defaults to two or more newlines: "\\n{2,}"
+   */
+  paragraphPattern?: RegExp;
+}
+
+// --- SentenceSplitter Implementation ---
+
+export class SentenceSplitter
+  extends TextSplitter
+  implements SentenceSplitterParams
+{
+  readonly minLength: number;
+  readonly maxLength: number;
+  readonly abbreviations: Set<string>;
+  readonly sentencePattern: RegExp;
+
+  constructor(fields?: Partial<SentenceSplitterParams>) {
+    super({
+      chunkSize: fields?.maxLength ?? 1000,
+      chunkOverlap: fields?.overlap ?? 0,
+      keepSeparator: true,
+      ...fields,
+    });
+
+    this.minLength = fields?.minLength ?? 0;
+    this.maxLength = fields?.maxLength ?? 1000;
+    this.abbreviations = new Set(
+      fields?.abbreviations ?? [
+        "Mr.",
+        "Mrs.",
+        "Ms.",
+        "Dr.",
+        "Prof.",
+        "Sr.",
+        "Jr.",
+        "etc.",
+        "vs.",
+        "i.e.",
+        "e.g.",
+        "a.m.",
+        "p.m.",
+        "U.S.",
+        "U.K.",
+        "B.C.",
+        "A.D.",
+        "Ph.D.",
+        "M.D.",
+        "St.",
+      ],
+    );
+
+    // Build regex pattern that excludes abbreviations
+    const abbreviationPattern = Array.from(this.abbreviations)
+      .map((abbr) => abbr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("|");
+
+    const basePattern = `(?<!\\b(?:${abbreviationPattern}))([.!?])\\s+(?=[A-Z])`;
+
+    this.sentencePattern = new RegExp(basePattern, "g");
+  }
+
+  splitText(text: string): string[] {
+    // Handle empty or whitespace-only text
+    if (!text || text.trim().length === 0) {
+      return [];
+    }
+
+    // Split text into sentences
+    const sentences = text
+      .split(this.sentencePattern)
+      .filter((s) => s.trim().length > 0)
+      .map((s) => s.trim());
+
+    // Merge sentences that are too short and split ones that are too long
+    const normalizedSentences: string[] = [];
+    let currentChunk = "";
+
+    for (const sentence of sentences) {
+      if (
+        currentChunk &&
+        this.lengthFunction(`${currentChunk} ${sentence}`) <= this.maxLength
+      ) {
+        currentChunk += ` ${sentence}`;
+      } else {
+        if (currentChunk) {
+          normalizedSentences.push(currentChunk.trim());
+        }
+        currentChunk = sentence;
+      }
+    }
+
+    if (currentChunk) {
+      normalizedSentences.push(currentChunk.trim());
+    }
+
+    // Apply overlap if specified
+    if (this.chunkOverlap > 0) {
+      return this.mergeSplits(normalizedSentences, " ");
+    }
+
+    return normalizedSentences;
+  }
+}
+
+// --- ParagraphSplitter Implementation ---
+
+export class ParagraphSplitter
+  extends TextSplitter
+  implements ParagraphSplitterParams
+{
+  readonly minLength: number;
+  readonly maxLength: number;
+  readonly paragraphPattern: RegExp;
+
+  constructor(fields?: Partial<ParagraphSplitterParams>) {
+    super({
+      chunkSize: fields?.maxLength ?? 1000,
+      chunkOverlap: fields?.overlap ?? 0,
+      keepSeparator: true,
+      ...fields,
+    });
+
+    this.minLength = fields?.minLength ?? 0;
+    this.maxLength = fields?.maxLength ?? 1000;
+    this.paragraphPattern = new RegExp(fields?.paragraphPattern ?? "\\n{2,}");
+  }
+
+  splitText(text: string): string[] {
+    // Handle empty or whitespace-only text
+    if (!text || text.trim().length === 0) {
+      return [];
+    }
+
+    // Split text into paragraphs
+    const paragraphs = text
+      .split(this.paragraphPattern)
+      .filter((p) => p.trim().length > 0)
+      .map((p) => p.trim());
+
+    // Merge short paragraphs and split long ones
+    const normalizedParagraphs: string[] = [];
+    let currentChunk = "";
+
+    for (const paragraph of paragraphs) {
+      const potentialChunk = currentChunk
+        ? `${currentChunk}\\n\\n${paragraph}`
+        : paragraph;
+
+      if (
+        currentChunk &&
+        this.lengthFunction(potentialChunk) <= this.maxLength
+      ) {
+        currentChunk = potentialChunk;
+      } else {
+        if (currentChunk) {
+          normalizedParagraphs.push(currentChunk);
+        }
+        currentChunk = paragraph;
+      }
+    }
+
+    if (currentChunk) {
+      normalizedParagraphs.push(currentChunk);
+    }
+
+    // Apply overlap if specified
+    if (this.chunkOverlap > 0) {
+      return this.mergeSplits(normalizedParagraphs, "\\n\\n");
+    }
+
+    return normalizedParagraphs;
+  }
+}

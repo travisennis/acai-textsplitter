@@ -1,0 +1,37 @@
+{
+  "name": "@travisennis/acai-textsplitter",
+  "version": "0.0.0",
+  "description": "Library providing multiple different text-splitting algorithms.",
+  "type": "module",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "keywords": ["cli", "ai", "llm"],
+  "author": "Travis Ennis",
+  "license": "MIT",
+  "scripts": {
+    "build": "npm run compile",
+    "clean": "rm -rf ./dist/",
+    "compile": "rm -rf ./dist && tsc && cp -r ./dist/source/. ./dist && rm -rf ./dist/source",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --unsafe --write",
+    "lint:staged": "biome lint --error-on-warnings --no-errors-on-unmatched --staged",
+    "prepare": "npm run compile",
+    "test": "node --test test/**/*.test.ts",
+    "pretest": "npm run compile",
+    "format": "biome format --write",
+    "dev": "node ./source/index.ts",
+    "oxlint": "npx oxlint@latest --ignore-path .gitignore --deny correctness --deny suspicous --deny pedantic --deny style --node-plugin",
+    "knip": "npx knip",
+    "check": "npx npm-check-updates  --interactive --format group"
+  },
+  "dependencies": {
+    "js-tiktoken": "^1.0.18"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/node": "^22.13.1",
+    "typescript": "^5.7.3"
+  }
+}
