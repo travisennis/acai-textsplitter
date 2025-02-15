@@ -17,6 +17,8 @@ export class ParagraphSplitter
   extends TextSplitter
   implements ParagraphSplitterParams
 {
+  // Matches one or more newlines with optional whitespace between them, effectively identifying paragraph breaks
+  static paragraphRegex = /\n\s*\n/;
   readonly minLength: number;
   readonly maxLength: number;
   readonly paragraphPattern: RegExp;
@@ -31,7 +33,8 @@ export class ParagraphSplitter
 
     this.minLength = fields?.minLength ?? 0;
     this.maxLength = fields?.maxLength ?? 1000;
-    this.paragraphPattern = fields?.paragraphPattern ?? /\n\s*\n/;
+    this.paragraphPattern =
+      fields?.paragraphPattern ?? ParagraphSplitter.paragraphRegex;
   }
 
   splitText(text: string): string[] {
