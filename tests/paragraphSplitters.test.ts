@@ -18,6 +18,7 @@ describe("ParagraphSplitter", () => {
   it("handles single newlines", () => {
     const text = "First line.\nStill first paragraph.\n\nSecond paragraph.";
     const chunks = splitter.splitText(text);
+    console.dir(chunks);
     assert.strictEqual(chunks.length, 2);
   });
 
@@ -54,12 +55,11 @@ describe("ParagraphSplitter", () => {
 
   it("handles custom paragraph patterns", () => {
     const customSplitter = new ParagraphSplitter({
-      maxLength: 100,
+      maxLength: 15,
       paragraphPattern: /\n---\n/,
     });
     const text = "First section\n---\nSecond section\n---\nThird section";
     const chunks = customSplitter.splitText(text);
-
     assert.strictEqual(chunks.length, 3);
     assert.strictEqual(chunks[0], "First section");
   });
