@@ -18,7 +18,6 @@ describe("ParagraphSplitter", () => {
   it("handles single newlines", () => {
     const text = "First line.\nStill first paragraph.\n\nSecond paragraph.";
     const chunks = splitter.splitText(text);
-    console.dir(chunks);
     assert.strictEqual(chunks.length, 2);
   });
 
