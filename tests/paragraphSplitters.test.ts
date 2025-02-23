@@ -4,8 +4,8 @@ import { ParagraphSplitter } from "../source/paragraphSplitter.ts";
 
 describe("ParagraphSplitter", () => {
   const splitter = new ParagraphSplitter({
-    maxLength: 100,
-    overlap: 20,
+    maxLength: 30,
+    overlap: 5,
   });
 
   it("splits text into paragraphs", () => {
@@ -46,7 +46,7 @@ describe("ParagraphSplitter", () => {
 
     if (chunks.length > 1) {
       assert(
-        chunks[1].includes(chunks[0].slice(-20)),
+        chunks[1].includes(chunks[0].slice(-5)),
         "Second chunk should contain overlap from first chunk",
       );
     }
