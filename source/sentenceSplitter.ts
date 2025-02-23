@@ -62,7 +62,7 @@ export class SentenceSplitter
       .map((abbr) => abbr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
       .join("|");
 
-    const basePattern = `(?<!\\b(?:${abbreviationPattern}))([.!?])\\s+(?=[A-Z])`;
+    const basePattern = `(?<!\\b(?:${abbreviationPattern}))(?<=[.!?])\\s+(?=[A-Z])`;
 
     this.sentencePattern = new RegExp(basePattern, "g");
   }
